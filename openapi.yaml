@@ -1,0 +1,703 @@
+openapi: 3.0.0
+info:
+  version: v1
+  title: Event Alerts
+  summary: Official API for the Event Alerts Discord community for the best Minecraft events
+  description: "The Event Alerts API is the best thing to use if you're looking for Minecraft event-related data\r\n\r\nWe primarily offer information regarding the [Event Alerts Discord](https://discord.gg/skeppy), which includes websockets for Minecraft events being announced/posted\r\n\r\nFeel free to join the Discord and ask us any questions about the API!\r\n\r\n## Important API information\r\n\r\nAll Discord IDs, timestamps, etc... (anything that uses Java's `long` type) are **strings**. JavaScript, and other languages, like to round these numbers, so we have to send/accept them as strings."
+  contact:
+    name: Event Alerts
+    url: 'https://discord.gg/skeppy'
+    email: eventalerts@venox.network
+  license:
+    name: GNU General Public License 3.0
+    identifier: GPL-3.0-or-later
+servers:
+  - url: 'https://eventalerts.venox.network/api/v1'
+    description: Venox Network
+paths:
+  /players:
+    get:
+      tags:
+        - players
+      summary: Get Players
+      description: Get a list of all players matching the specified parameters
+      operationId: get-players
+      parameters:
+        - name: anniversaries
+          in: query
+          description: Array of anniversaries returned players must have
+          allowEmptyValue: true
+          explode: false
+          schema:
+            type: array
+            examples:
+              - - 2024
+            uniqueItems: true
+            items:
+              type: integer
+              format: int32
+              examples:
+                - 2024
+        - name: boosterPasses
+          in: query
+          description: Array of Discord user IDs the returned players must have given a Booster Pass to
+          allowEmptyValue: true
+          schema:
+            type: array
+            examples:
+              - - '242385234992037900'
+            uniqueItems: true
+            items:
+              type: string
+              examples:
+                - '242385234992037900'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    examples:
+                      - 200
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+        '400':
+          $ref: '#/components/responses/400_Invalid-value'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  '/players/id/{id}':
+    get:
+      tags:
+        - players
+      summary: Get Player by Object ID
+      description: Retrieve the information of the player with the matching Object ID
+      operationId: get-player-id
+      parameters:
+        - name: id
+          in: path
+          description: The Object ID of the player to get
+          required: true
+          schema:
+            type: string
+            pattern: '[a-f\d]{24}'
+            examples:
+              - 660ee99164e47b491692f04a
+      responses:
+        '200':
+          $ref: '#/components/responses/Player'
+        '404':
+          $ref: '#/components/responses/429_Rate-limited'
+        '429':
+          description: Too Many Requests
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+  '/players/user/{user}':
+    get:
+      tags:
+        - players
+      summary: Get Player by Discord user ID
+      description: Retrieve the information of the player with the matching Discord user ID
+      operationId: get-player-user
+      parameters:
+        - name: user
+          in: path
+          description: The Discord user ID of the player to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Player'
+        '404':
+          $ref: '#/components/responses/404_Invalid-endpoint'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  /servers:
+    get:
+      tags:
+        - servers
+      summary: Get Servers
+      description: Get a list of all servers matching the specified parameters
+      operationId: get-servers
+      parameters:
+        - name: name
+          in: query
+          description: The name of the server
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The description of the server
+          schema:
+            type: string
+        - name: invite
+          in: query
+          description: The Discord invite of the server (excluding discord.gg/)
+          schema:
+            type: string
+        - name: created
+          in: query
+          description: The time the server was created in milliseconds
+          schema:
+            type: string
+            format: int64
+        - name: tags
+          in: query
+          description: The tags the server has
+          schema:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+              examples:
+                - MONEY
+        - name: color
+          in: query
+          description: The color of the server in RGB integer form
+          schema:
+            type: integer
+            format: int32
+        - name: thumbnail
+          in: query
+          description: The thumbnail URL for the server's logo
+          schema:
+            type: string
+        - name: gets
+          in: query
+          description: The data for amount of times the server has been got
+          schema:
+            type: array
+            items:
+              type: integer
+              examples:
+                - 242385234992037900
+              form: int64
+        - name: representatives
+          in: query
+          description: Discord user IDs of the representatives of the server
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+              examples:
+                - 242385234992037900
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    examples:
+                      - 200
+                  servers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Server'
+        '400':
+          $ref: '#/components/responses/400_Invalid-value'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  '/servers/id/{id}':
+    get:
+      tags:
+        - servers
+      summary: Get Server by Object ID
+      description: Retrieve the information of the server with the matching Object ID
+      operationId: get-servers-id
+      parameters:
+        - name: id
+          in: path
+          description: The Object ID of the server to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Server'
+        '404':
+          $ref: '#/components/responses/404_Invalid-endpoint'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  '/servers/message/{message}':
+    get:
+      tags:
+        - servers
+      summary: Get Server by Discord message ID
+      description: Retrieve the information of the server with the matching Discord message ID
+      operationId: get-servers-message
+      parameters:
+        - name: message
+          in: path
+          description: The Discord message ID of the server to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Server'
+        '404':
+          $ref: '#/components/responses/404_Invalid-endpoint'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  /events:
+    get:
+      tags:
+        - events
+      summary: Get Events
+      description: Get a list of all active events matching the specified parameters
+      operationId: get-events
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    examples:
+                      - 200
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+        '400':
+          $ref: '#/components/responses/400_Invalid-value'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  '/events/id/{id}':
+    get:
+      tags:
+        - events
+      summary: Get Event by Object ID
+      description: Retrieve the information of the active event with the matching Object ID
+      operationId: get-events-id
+      parameters:
+        - name: id
+          in: path
+          description: The Object ID of the event to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Event'
+        '404':
+          $ref: '#/components/responses/404_Invalid-endpoint'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+  '/events/thread/{thread}':
+    get:
+      tags:
+        - events
+      summary: Get Event by Discord thread ID
+      description: Retrieve the information of the active event with the matching Discord thread channel ID
+      operationId: get-events-thread
+      parameters:
+        - name: thread
+          in: path
+          description: The Discord thread channel ID of the event to get
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Event'
+        '404':
+          $ref: '#/components/responses/404_Invalid-endpoint'
+        '429':
+          $ref: '#/components/responses/429_Rate-limited'
+        '500':
+          $ref: '#/components/responses/500_Server-error'
+      servers:
+        - url: 'https://eventalerts.venox.network/api/v1'
+          description: Venox Network
+tags:
+  - name: events
+    description: Active events posted in Event Alerts
+  - name: players
+    description: Members of the Event Alerts community
+  - name: servers
+    description: Partnered Event Alerts servers
+components:
+  responses:
+    429_Rate-limited:
+      description: 'Rate-limited, sent too many requests too quickly'
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the response
+                format: int32
+                default: 429
+              message:
+                type: string
+                description: Human-readable message for the error response
+                default: Rate limited
+            required:
+              - code
+              - message
+    Player:
+      description: Successful response of a single player object
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the response
+                format: int32
+                examples:
+                  - 200
+              player:
+                $ref: '#/components/schemas/Player'
+                description: The returned player object
+            required:
+              - code
+              - player
+    Server:
+      description: Successful response of a single server object
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the response
+                format: int32
+                examples:
+                  - 200
+              server:
+                $ref: '#/components/schemas/Server'
+                description: The returned server object
+            required:
+              - code
+              - server
+    Event:
+      description: Successful response of a single event object
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the response
+                format: int32
+                examples:
+                  - 200
+              event:
+                $ref: '#/components/schemas/Event'
+                description: The returned event object
+            required:
+              - code
+              - event
+    404_Invalid-endpoint:
+      description: 'Object not found, given invalid path parameters'
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the message
+                format: int32
+                default: 404
+              message:
+                type: string
+                description: Human-readable message for the error response
+                default: 'Invalid endpoint type/value: {type}/{value}'
+            required:
+              - code
+              - message
+    400_Invalid-value:
+      description: 'Given invalid value, typically for a query parameter'
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              id:
+                type: integer
+                description: The status code of the response
+                format: int32
+                default: 400
+              message:
+                type: string
+                description: Human-readable message for the error response
+                examples:
+                  - Invalid color value
+            required:
+              - id
+              - message
+    500_Server-error:
+      description: 'The server encountered an error when serving data, please contact the API developers!'
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              code:
+                type: integer
+                description: The status code of the response
+                format: int32
+                default: 500
+              message:
+                type: string
+                description: Human-readable message for the error response
+                examples:
+                  - Encountered an exception!
+            required:
+              - code
+              - message
+  schemas:
+    Player:
+      type: object
+      title: Player
+      description: A member of the Event Alerts community
+      properties:
+        id:
+          type: string
+          description: Unique Object ID assigned by Mongo
+          pattern: '[a-f\d]{24}'
+          readOnly: true
+          examples:
+            - 668714bf665891368f7fe6b8
+        user:
+          type: string
+          description: Their Discord user ID
+          pattern: '\d{18}'
+          examples:
+            - '242385234992037900'
+        anniversaries:
+          type:
+            - array
+            - 'null'
+          description: Array of integers of anniversary years they have
+          uniqueItems: true
+          items:
+            type: integer
+            format: int32
+            examples:
+              - 2024
+        boosterPasses:
+          type:
+            - array
+            - 'null'
+          description: Array of longs of users they've given Booster Passes to
+          uniqueItems: true
+          items:
+            type: string
+            pattern: '\d{18}'
+            examples:
+              - '365630764244664300'
+      required:
+        - id
+        - user
+      examples:
+        - id: 668714bf665891368f7fe6b8
+          user: 242385234992037900
+          anniversaries:
+            - 2024
+          boosterPasses:
+            - 365630764244664300
+      x-examples:
+        Example 1:
+          boosterPasses: []
+          id: 668714bf665891368f7fe6b8
+          user: 1046922615270424600
+          anniversaries:
+            - 2024
+    Server:
+      type: object
+      title: Server
+      description: A server that's partnered with Event Alerts
+      properties:
+        id:
+          type: string
+          pattern: '[a-f\d]{24}'
+        message:
+          type: string
+          pattern: '\d{18}'
+        created:
+          type: string
+        representatives:
+          type: array
+          items:
+            type: string
+            pattern: '\d{18}'
+        name:
+          type:
+            - string
+            - 'null'
+        description:
+          type:
+            - string
+            - 'null'
+        invite:
+          type:
+            - string
+            - 'null'
+        thumbnail:
+          type:
+            - string
+            - 'null'
+        color:
+          type:
+            - integer
+            - 'null'
+        tags:
+          type:
+            - array
+            - 'null'
+          items:
+            type: string
+            enum:
+              - CIVILIZATION
+              - FUN
+              - HYPIXEL
+              - LUCK
+              - MINEHUT
+              - MONEY
+              - PVP
+              - SKILL
+              - STREAMS
+              - VIDEOS
+        gets:
+          type:
+            - object
+            - 'null'
+          additionalProperties: false
+      required:
+        - id
+        - message
+        - created
+        - representatives
+      x-examples:
+        Example 1:
+          thumbnail: 'https://media.discordapp.net/attachments/1145063540630237364/1224330770768724098/f007eb5ea950c895f24c16bd5bca9310_4.png?ex=661d19e2&is=660aa4e2&hm=56975067c280028f8af374dc5b047c1513bb17f57d67805e40af4f3485bdaca2&'
+          color: 65280
+          created: 1713730362116
+          name: Fling Events
+          description: Welcome to Fling Events! We host large Minecraft High Production Quality Events for Youtube! Come join us!
+          id: 6625733acacf0709abc22f89
+          invite: cedK5rzBDr
+          representatives:
+            - 773190455650549800
+            - 431161874239848450
+          message: 1261799554898989000
+          gets:
+            '381890968971902976': '6'
+            '431161874239848460': '2'
+            '365630764244664320': '1'
+            '267657876896481280': '2'
+            '1067512862936936448': '1'
+            '772934180828741683': '1'
+          tags:
+            - STREAMS
+            - CIVILIZATION
+            - VIDEOS
+            - FUN
+    Event:
+      type: object
+      title: Event
+      description: An active event posted in Event Alerts
+      properties:
+        thread:
+          type: string
+          pattern: '\d{18}'
+        channel:
+          type: string
+          pattern: '\d{18}'
+        title:
+          type: string
+        id:
+          type: string
+          pattern: '[a-f\d]{24}'
+        subscribers:
+          type: array
+          items:
+            type: string
+            pattern: '\d{18}'
+        time:
+          type: string
+          pattern: \d+
+          examples:
+            - '1723867359630'
+      required:
+        - thread
+        - channel
+        - title
+      x-examples:
+        Example 1:
+          channel: 980635360184905900
+          thread: 1273761115523780600
+          id: 66be787b2e2044459c3eb7ff
+          time: 1723818907391
+          title: Build And Seek Event!
+          subscribers:
+            - 844590957424541700
+            - 1162439954530578400
