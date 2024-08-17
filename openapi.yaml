@@ -188,7 +188,7 @@ paths:
               type: integer
               examples:
                 - 242385234992037900
-              form: int64
+              format: int64
         - name: representatives
           in: query
           description: Discord user IDs of the representatives of the server
