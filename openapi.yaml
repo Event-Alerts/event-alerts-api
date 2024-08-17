@@ -27,7 +27,6 @@ paths:
           in: query
           description: Array of anniversaries returned players must have
           allowEmptyValue: true
-          explode: false
           schema:
             type: array
             examples:
